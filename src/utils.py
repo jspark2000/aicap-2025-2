@@ -44,18 +44,40 @@ def replace_numeric_sentinels(
     df: pd.DataFrame,
     columns: Iterable[str] | None = None,
     sentinel_values: Iterable[float] | None = None,
+    column_specific_sentinels: dict[str, Iterable[float]] | None = None,
 ) -> pd.DataFrame:
     """
     KNHANES 상징값(예: 8, 88, 8888)을 NaN으로 변환합니다.
+    
+    Args:
+        df: 처리할 데이터프레임
+        columns: 처리할 컬럼 목록 (None이면 모든 수치형 컬럼)
+        sentinel_values: 기본 상징값 목록 (None이면 DEFAULT_SENTINELS 사용)
+        column_specific_sentinels: 컬럼별 특정 상징값 딕셔너리
+            예: {"BP_GAD_1": [8, 9], "BP_GAD_2": [8, 9]}
+    
+    Returns:
+        상징값이 NaN으로 변환된 데이터프레임
     """
-    sentinels = set(sentinel_values or DEFAULT_SENTINELS)
+    default_sentinels = set(sentinel_values or DEFAULT_SENTINELS)
+    column_specific = column_specific_sentinels or {}
+    
     target_cols = (
         list(columns)
         if columns is not None
         else df.select_dtypes(include=["number"]).columns.tolist()
     )
+    
     for col in target_cols:
+        if col in column_specific:
+            # 컬럼별 특정 상징값 사용
+            sentinels = set(column_specific[col])
+        else:
+            # 기본 상징값 사용
+            sentinels = default_sentinels
+        
         df[col] = df[col].replace(list(sentinels), np.nan)
+    
     return df
 
 
@@ -139,16 +161,30 @@ def filter_non_smoking_non_drinking(
     smoker_col: str = "sm_presnt",
     drinking_freq_col: str = "dr_month",
     lifetime_drink_col: str = "BD1",
+    recent_drink_col: str = "BD1_11",
     min_age: int = 20,
     max_age: int = 64,
 ) -> pd.DataFrame:
     """
     비흡연·비음주 성인 중 20-64세 대상자에 대한 연구 포함 기준을 적용합니다.
+    
+    비음주 조건:
+    - BD1 == 1 (술을 마셔 본 적 없음) 또는
+    - BD1_11 == 1 (최근 1년간 전혀 마시지 않았다) 또는
+    - dr_month == 0 (월간 음주율 0)
     """
+    # 비음주 조건: BD1 == 1 또는 BD1_11 == 1 또는 dr_month == 0
+    non_drinking_mask = df[drinking_freq_col] == 0
+    
+    if lifetime_drink_col in df.columns:
+        non_drinking_mask = non_drinking_mask | (df[lifetime_drink_col] == 1)
+    
+    if recent_drink_col in df.columns:
+        non_drinking_mask = non_drinking_mask | (df[recent_drink_col] == 1)
+    
     mask = (
         df[age_col].between(min_age, max_age)
         & (df[smoker_col] == 0)
-        & (df[drinking_freq_col] == 0)
-        & (df[lifetime_drink_col] == 2)
+        & non_drinking_mask
     )
     return df.loc[mask].copy()

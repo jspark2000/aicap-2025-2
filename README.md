@@ -23,7 +23,7 @@ aicap-2025-2/
 ├── data/
 │   ├── khanes-2023.csv              # 원본 KNHANES 2023 데이터
 │   ├── headers.csv                   # 컬럼명-설명 매핑 파일
-│   └── khanes_preprocessed.parquet   # 전처리 완료 데이터셋
+│   └── khanes_preprocessed.csv       # 전처리 완료 데이터셋
 ├── docs/
 │   └── methods.pdf                   # 연구 방법론 문서
 ├── src/
@@ -67,7 +67,7 @@ aicap-2025-2/
 
 2. **전처리 노트북 실행**
    - `preprocessing.ipynb` 파일을 열고 셀을 순차적으로 실행합니다.
-   - 전처리 완료 후 `data/khanes_preprocessed.parquet` 파일이 생성됩니다.
+   - 전처리 완료 후 `data/khanes_preprocessed.csv` 파일이 생성됩니다.
 
 ## Google Colab에서 실행하기
 
@@ -103,7 +103,10 @@ README 상단의 **"Open In Colab"** 배지를 클릭하면 자동으로 Colab �
 전처리 파이프라인은 다음과 같은 단계로 구성됩니다:
 
 1. **데이터 로드**: KNHANES CSV 파일 읽기
-2. **상징값 처리**: 설문조사 상징값(8, 88, 888 등)을 NaN으로 변환
+2. **상징값 처리**: 설문조사 상징값을 NaN으로 변환
+   - **일부 컬럼 (8, 9만 처리)**: PSY_GAD_COLS, TARGET_COLS, BD1, BD1_11
+     - 실제 값과 상징값이 구분되는 경우 (예: 0-3=실제값, 8-9=상징값)
+   - **나머지 컬럼 (모든 상징값 처리)**: 7, 8, 9, 77, 88, 99, 777, 888, 999, 7777, 8888, 9999
 3. **필터링**: 비흡연·비음주 성인, 20-64세 대상자만 선별
 4. **이상치 처리**: IQR 기반 이상치 제한(capping)
 5. **결측치 보간**: 연령 기준 선형 보간법 적용
@@ -172,6 +175,9 @@ README 상단의 **"Open In Colab"** 배지를 클릭하면 자동으로 Colab �
 
 - `load_khanes_data()`: KNHANES CSV 파일 로드
 - `replace_numeric_sentinels()`: 상징값을 NaN으로 변환
+  - 컬럼별로 다른 상징값을 지정할 수 있음 (`column_specific_sentinels` 파라미터)
+  - 기본값: 모든 상징값(7, 8, 9, 77, 88, 99, 777, 888, 999, 7777, 8888, 9999) 처리
+  - 특정 컬럼: 8, 9만 상징값으로 처리 (PSY_GAD_COLS, TARGET_COLS, BD1, BD1_11)
 - `cap_iqr_outliers()`: IQR 기반 이상치 제한
 - `interpolate_numeric_features()`: 선형 보간법 적용
 - `standardize_features()`: Z-score 표준화
@@ -182,7 +188,7 @@ README 상단의 **"Open In Colab"** 배지를 클릭하면 자동으로 Colab �
 
 전처리 완료 후 생성되는 데이터셋:
 
-- **파일명**: `data/khanes_preprocessed.parquet`
+- **파일명**: `data/khanes_preprocessed.csv`
 - **행 수**: 1,256명 (비흡연·비음주 성인, 20-64세)
 - **열 수**: 38개 (ID, 생물학적/심리학적/사회행동적 변수, 타겟 변수)
 - **대사성 질환 유병률**: 28.8% (362명)
