@@ -103,10 +103,10 @@ README 상단의 **"Open In Colab"** 배지를 클릭하면 자동으로 Colab �
 전처리 파이프라인은 다음과 같은 단계로 구성됩니다:
 
 1. **데이터 로드**: KNHANES CSV 파일 읽기
-2. **상징값 처리**: 설문조사 상징값을 NaN으로 변환
-   - **일부 컬럼 (8, 9만 처리)**: PSY_GAD_COLS, TARGET_COLS, BD1, BD1_11
+2. **상징값 처리**: 일부 컬럼에 대해서만 상징값(8, 9)을 NaN으로 변환
+   - **처리 대상 컬럼**: PSY_GAD_COLS, TARGET_COLS, BD1, BD1_11
      - 실제 값과 상징값이 구분되는 경우 (예: 0-3=실제값, 8-9=상징값)
-   - **나머지 컬럼 (모든 상징값 처리)**: 7, 8, 9, 77, 88, 99, 777, 888, 999, 7777, 8888, 9999
+   - **나머지 컬럼**: 상징값 처리 안 함
 3. **필터링**: 비흡연·비음주 성인, 20-64세 대상자만 선별
 4. **이상치 처리**: IQR 기반 이상치 제한(capping)
 5. **결측치 보간**: 연령 기준 선형 보간법 적용
@@ -175,9 +175,8 @@ README 상단의 **"Open In Colab"** 배지를 클릭하면 자동으로 Colab �
 
 - `load_khanes_data()`: KNHANES CSV 파일 로드
 - `replace_numeric_sentinels()`: 상징값을 NaN으로 변환
-  - 컬럼별로 다른 상징값을 지정할 수 있음 (`column_specific_sentinels` 파라미터)
-  - 기본값: 모든 상징값(7, 8, 9, 77, 88, 99, 777, 888, 999, 7777, 8888, 9999) 처리
-  - 특정 컬럼: 8, 9만 상징값으로 처리 (PSY_GAD_COLS, TARGET_COLS, BD1, BD1_11)
+  - 지정된 컬럼에 대해서만 상징값 처리
+  - 현재는 PSY_GAD_COLS, TARGET_COLS, BD1, BD1_11에 대해 8, 9만 상징값으로 처리
 - `cap_iqr_outliers()`: IQR 기반 이상치 제한
 - `interpolate_numeric_features()`: 선형 보간법 적용
 - `standardize_features()`: Z-score 표준화
