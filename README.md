@@ -97,24 +97,6 @@ README 상단의 **"Open In Colab"** 배지를 클릭하면 자동으로 Colab �
 4. **나머지 셀 실행**
    - 이후 셀들을 순차적으로 실행하면 전처리가 완료됩니다.
 
-### 방법 3: Google Drive 사용 (대용량 데이터)
-
-대용량 데이터나 반복 실행이 필요한 경우 Google Drive를 사용하는 것을 권장합니다:
-
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-
-# 데이터 경로 변경
-DATA_PATH = Path('/content/drive/MyDrive/path/to/khanes-2023.csv')
-```
-
-### Colab 실행 시 주의사항
-
-- **자동 설정**: 노트북에 포함된 Colab 설정 셀이 자동으로 환경을 구성합니다.
-- **세션 종료**: Colab 세션이 종료되면 업로드한 파일이 삭제됩니다. 중요한 결과는 다운로드하거나 Google Drive에 저장하세요.
-- **패키지 설치**: 필요한 패키지는 자동으로 설치되지만, 첫 실행 시 시간이 걸릴 수 있습니다.
-- **utils.py 다운로드**: GitHub에서 자동 다운로드가 실패하는 경우, `src/utils.py` 파일을 수동으로 생성하거나 복사해야 합니다.
 
 ## 데이터 전처리 과정
 
